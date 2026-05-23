@@ -1,39 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Messenger Bot</title>
-</head>
-<body>
-
-<h2>Click me!</h2>
-
 <form action="/broadcast" method="post">
+
+    <textarea
+        name="message"
+        rows="6"
+        cols="60"
+        placeholder="Type your broadcast message here..."
+    ></textarea>
+
+    <br><br>
+
     <button type="submit">
-        Send to all
+        SEND BROADCAST TO ALL USERS
     </button>
+
 </form>
-
-<br>
-
-<table border="1">
-<!-- Write your comments here -->
-<tr>
-    <!--<th>PSID</th>-->
-    <th>First Seen</th>
-    <th>Last Seen</th>
-    <th>Messages</th>
-</tr>
-
-{% for user in users %}
-<tr>
-    <!--<td>{{ user[0] }}</td>-->
-    <td>{{ user[1] }}</td>
-    <td>{{ user[2] }}</td>
-    <td>{{ user[3] }}</td>
-</tr>
-{% endfor %}
-
-</table>
-
-</body>
-</html>
