@@ -2,14 +2,19 @@ from flask import Flask, request, render_template, redirect
 import sqlite3
 import requests
 from datetime import datetime
-from config import VERIFY_TOKEN, PAGE_ACCESS_TOKEN
+
+from config import PAGE_ACCESS_TOKEN, VERIFY_TOKEN
+from db import init_db
+
+# AUTO CREATE DATABASE
+init_db()
 
 app = Flask(__name__)
 
 
-# =========================
-# CRM DASHBOARD
-# =========================
+# =====================================
+# DASHBOARD
+# =====================================
 @app.route("/")
 def dashboard():
 
@@ -17,6 +22,7 @@ def dashboard():
     cur = conn.cursor()
 
     cur.execute("SELECT * FROM users ORDER BY last_seen DESC")
+
     users = cur.fetchall()
 
     conn.close()
@@ -24,52 +30,72 @@ def dashboard():
     return render_template("index.html", users=users)
 
 
-# =========================
-# FACEBOOK WEBHOOK (ROBUST)
-# =========================
-@app.route("/webhook", methods=["POST"])
+# =====================================
+# FACEBOOK WEBHOOK
+# =====================================
+@app.route("/webhook", methods=["GET", "POST"])
 def webhook():
 
-    data = request.get_json(force=True)
+    # VERIFY WEBHOOK
+    if request.method == "GET":
 
-    print("RAW:", data)
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
 
-    for entry in data.get("entry", []):
+        if token == VERIFY_TOKEN:
+            return challenge
 
-        for event in entry.get("messaging", []):
+        return "Invalid token"
 
-            sender_id = event.get("sender", {}).get("id")
 
-            if not sender_id:
-                continue
+    # RECEIVE FACEBOOK EVENTS
+    if request.method == "POST":
 
-            print("SENDER:", sender_id)
+        data = request.get_json(force=True)
 
-            conn = sqlite3.connect("database.db")
-            cur = conn.cursor()
+        print("RAW DATA:", data)
 
-            cur.execute("""
-                INSERT OR IGNORE INTO users (psid, first_seen, last_seen, messages_count)
+        conn = sqlite3.connect("database.db")
+        cur = conn.cursor()
+
+        for entry in data.get("entry", []):
+
+            for event in entry.get("messaging", []):
+
+                sender_id = event.get("sender", {}).get("id")
+
+                if not sender_id:
+                    continue
+
+                now = datetime.now().isoformat()
+
+                # INSERT USER IF NEW
+                cur.execute("""
+                INSERT OR IGNORE INTO users
+                (psid, first_seen, last_seen, messages_count)
                 VALUES (?, ?, ?, 1)
-            """, (sender_id, datetime.now().isoformat(), datetime.now().isoformat()))
+                """, (sender_id, now, now))
 
-            cur.execute("""
+                # UPDATE USER
+                cur.execute("""
                 UPDATE users
-                SET last_seen = ?, messages_count = messages_count + 1
+                SET last_seen = ?,
+                    messages_count = messages_count + 1
                 WHERE psid = ?
-            """, (datetime.now().isoformat(), sender_id))
+                """, (now, sender_id))
 
-            conn.commit()
-            conn.close()
+                conn.commit()
 
-            print("SAVED USER:", sender_id)
+                print("SAVED USER:", sender_id)
 
-    return "ok", 200
+        conn.close()
+
+        return "ok", 200
 
 
-# =========================
+# =====================================
 # SEND MESSAGE FUNCTION
-# =========================
+# =====================================
 def send_message(psid, text):
 
     url = f"https://graph.facebook.com/v19.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
@@ -81,12 +107,12 @@ def send_message(psid, text):
 
     r = requests.post(url, json=payload)
 
-    print("FB RESPONSE:", r.status_code, r.text)
+    print(r.status_code, r.text)
 
 
-# =========================
-# CRM BROADCAST BUTTON
-# =========================
+# =====================================
+# BROADCAST TO ALL USERS
+# =====================================
 @app.route("/broadcast", methods=["POST"])
 def broadcast():
 
@@ -94,13 +120,17 @@ def broadcast():
     cur = conn.cursor()
 
     cur.execute("SELECT psid FROM users")
+
     users = cur.fetchall()
 
     print("TOTAL USERS:", len(users))
 
     for (psid,) in users:
 
-        send_message(psid, "👋 Hey! Just checking in — let me know if you still need help.")
+        send_message(
+            psid,
+            "👋 Hey! Just checking in — message us anytime if you need help."
+        )
 
     conn.close()
 
@@ -108,4 +138,4 @@ def broadcast():
 
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run()
