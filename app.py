@@ -129,7 +129,7 @@ def broadcast():
 
         send_message(
             psid,
-            "👋 Hey! Just checking in — message us anytime if you need help."
+            "👋 Hey! This is a test!"
         )
 
     conn.close()
