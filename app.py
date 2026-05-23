@@ -15,30 +15,19 @@ app = Flask(__name__)
 # =====================================
 # DASHBOARD
 # =====================================
-@app.route("/broadcast", methods=["POST"])
-def broadcast():
-
-    message = request.form.get("message")
-
-    if not message:
-        return redirect("/")
+@app.route("/")
+def dashboard():
 
     conn = sqlite3.connect("database.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT psid FROM users")
+    cur.execute("SELECT * FROM users ORDER BY last_seen DESC")
 
     users = cur.fetchall()
 
-    print("TOTAL USERS:", len(users))
-
-    for (psid,) in users:
-
-        send_message(psid, message)
-
     conn.close()
 
-    return redirect("/")
+    return render_template("index.html", users=users)
 
 
 # =====================================
@@ -127,6 +116,11 @@ def send_message(psid, text):
 @app.route("/broadcast", methods=["POST"])
 def broadcast():
 
+    message = request.form.get("message")
+
+    if not message:
+        return redirect("/")
+
     conn = sqlite3.connect("database.db")
     cur = conn.cursor()
 
@@ -138,10 +132,7 @@ def broadcast():
 
     for (psid,) in users:
 
-        send_message(
-            psid,
-            "👋 Hey! This is a test!"
-        )
+        send_message(psid, message)
 
     conn.close()
 
