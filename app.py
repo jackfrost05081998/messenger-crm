@@ -15,19 +15,30 @@ app = Flask(__name__)
 # =====================================
 # DASHBOARD
 # =====================================
-@app.route("/")
-def dashboard():
+@app.route("/broadcast", methods=["POST"])
+def broadcast():
+
+    message = request.form.get("message")
+
+    if not message:
+        return redirect("/")
 
     conn = sqlite3.connect("database.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM users ORDER BY last_seen DESC")
+    cur.execute("SELECT psid FROM users")
 
     users = cur.fetchall()
 
+    print("TOTAL USERS:", len(users))
+
+    for (psid,) in users:
+
+        send_message(psid, message)
+
     conn.close()
 
-    return render_template("index.html", users=users)
+    return redirect("/")
 
 
 # =====================================
