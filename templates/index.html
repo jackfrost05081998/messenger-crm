@@ -1,3 +1,26 @@
+<h2>CRM Dashboard</h2>
+
+<h3>Total Users: {{ total_users }}</h3>
+
+<h3>Users Who Will Receive Broadcast</h3>
+
+<table border="1">
+
+<tr>
+    <th>Name / PSID</th>
+    <th>Last Active</th>
+    <th>Messages</th>
+</tr>
+
+{% for user in users %}
+<tr>
+    <td>{{ user[1] if user[1] else user[0] }}</td>
+    <td>{{ user[2] }}</td>
+    <td>{{ user[3] }}</td>
+</tr>
+{% endfor %}
+
+</table>
 <form action="/broadcast" method="post">
 
     <textarea
