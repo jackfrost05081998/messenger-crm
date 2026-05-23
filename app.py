@@ -21,13 +21,26 @@ def dashboard():
     conn = sqlite3.connect("database.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM users ORDER BY last_seen DESC")
+    # ALL USERS
+    cur.execute("""
+    SELECT psid, name, last_seen, messages_count
+    FROM users
+    ORDER BY last_seen DESC
+    """)
 
     users = cur.fetchall()
 
+    # COUNT USERS
+    cur.execute("SELECT COUNT(*) FROM users")
+    total_users = cur.fetchone()[0]
+
     conn.close()
 
-    return render_template("index.html", users=users)
+    return render_template(
+        "index.html",
+        users=users,
+        total_users=total_users
+    )
 
 
 # =====================================
