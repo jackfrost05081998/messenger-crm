@@ -25,24 +25,7 @@ button {
 </head>
 <div class="container">
 <h2>Use me!</h2>
-<table border="1">
-
-<tr>
-    <th>ID</th>
-    <th>Last Active</th>
-</tr>
-
-{% for user in users %}
-<tr>
-    <td>{{ user[1] if user[1] else user[0] }}</td>
-    <td>{{ user[2] }}</td>
-</tr>
-    
-{% endfor %}
-</table>
-
 <br>
-
 <form action="/broadcast" method="post">
 
     <textarea
@@ -59,4 +42,19 @@ button {
     </button>
 
 </form>
+    <table border="1">
+
+<tr>
+    <th>ID</th>
+    <th>Last Active</th>
+</tr>
+
+{% for user in users %}
+<tr>
+    <td>{{ user[1] if user[1] else user[0] }}</td>
+    <td>{{ user[2] }}</td>
+</tr>
+    
+{% endfor %}
+</table>
 </div>
