@@ -1,22 +1,22 @@
-<h2>CRM Dashboard</h2>
+<h2>Use me!</h2>
 <table border="1">
 
 <tr>
-    <th>Name / PSID</th>
+    <th>ID</th>
     <th>Last Active</th>
-    <th>Messages</th>
 </tr>
 
 {% for user in users %}
 <tr>
     <td>{{ user[1] if user[1] else user[0] }}</td>
     <td>{{ user[2] }}</td>
-    <td>{{ user[3] }}</td>
 </tr>
+    
 {% endfor %}
-
 </table>
+
 <br>
+
 <form action="/broadcast" method="post">
 
     <textarea
@@ -29,7 +29,7 @@
     <br><br>
 
     <button type="submit">
-        SEND BROADCAST TO ALL USERS
+        Send to all!
     </button>
 
 </form>
