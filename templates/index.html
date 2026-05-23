@@ -1,9 +1,4 @@
 <h2>CRM Dashboard</h2>
-
-<h3>Total Users: {{ total_users }}</h3>
-
-<h3>Users Who Will Receive Broadcast</h3>
-
 <table border="1">
 
 <tr>
@@ -21,6 +16,7 @@
 {% endfor %}
 
 </table>
+<br>
 <form action="/broadcast" method="post">
 
     <textarea
